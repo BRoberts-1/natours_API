@@ -126,6 +126,8 @@ const express = require('express');
 
 const app = express();
 
+app.use(express.json());
+
 // app.get('/', (req, res) => {
 //   res.status(200).json({ message: "Yayyy, it's working!!", app: 'Natours' });
 // });
@@ -147,6 +149,16 @@ const app = express();
 // This is a file based API, eventually it will be a Database API.
 // We must include the core module 'fs' at the top.
 
+// To implement POST request to add a new tour to our dataset. This is data from client to server. The sent data will be on the 'req' object.
+// The URL will be the same, only the HTTP method will change.
+// We will get access to our 'req' and 'res' object to handle with callback.
+// We need middleware to have the 'body' with the data on the 'req' object. We will use app.use(express.json()); to do this. Middleware is basically a function that can modify the incoming 'req' data. It stands between the 'req' and the 'res'. It is a step the 'req' goes through to be processed for the server. Here the data from the 'body' property is added to the 'req' object.
+// After this, we must send back a response from the server. Always need to send something back to complete the 'req'/'res' cycle.
+
+// To persist the data from POST into our file /tours-simple.json:
+// The first step is to find the ID from the database of the body usually it is given automaticall, in our case we are using the filesystem and therefore we will take ID of the last object and increment it up by one.(add one to id.)
+// We have the array saved in our tours variable.
+
 const tours = JSON.parse(
   fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`)
 );
@@ -159,6 +171,37 @@ app.get('/api/v1/tours', (req, res) => {
       tours: tours,
     },
   });
+});
+
+app.post('/api/v1/tours', (req, res) => {
+  // console.log(req.body);
+
+  // tours.length - 1 gives us the last element of the array. We take the id property of that and add one. + 1
+  // then we take our Object.assign() to add the newId to the body object. We didn't do req.body.id = newId because this would mutate the original body object.
+  // We want to push this tour into the tour array so we use tours.push(newTour)
+  const newId = tours[tours.length - 1].id + 1;
+  const newTour = Object.assign({ id: newId }, req.body);
+
+  // Now we have to write this newTour object into the file to persist it.
+  tours.push(newTour);
+  // we are inside asyncronous callback function so we use just writeFile() and not writeFileSync()
+  // We have as args, file pathway anem to write to file, what to write here it is tours, and a callback function to handle errors.
+  // We have to stringify this object with JSON.stringify()
+  // Once the file is written, we want to send the newly created object as a response.
+  // You can't send two responses, so we take out one of the responses.
+  fs.writeFile(
+    `${__dirname}/dev-data/data/tours-simple.json`,
+    JSON.stringify(tours, (err) => {
+      res.status(201).json({
+        status: 'sucess',
+        data: {
+          tour: newTour,
+        },
+      });
+    })
+  );
+
+  // res.send('Done!');
 });
 
 const port = 3000;
