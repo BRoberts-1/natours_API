@@ -44,3 +44,76 @@ const port = 3000;
 app.listen(port, () => {
   console.log(`App running on port ${port}...`);
 });
+
+// Section 51 - APIs and RESTful API Design
+
+// API - Application Programming Interface is a piece of software that can be used by another piece of software, in order to allow applications to talk to each other.
+
+// The 'Application' can be other things no just web APIS:
+// Node.js modules: fs or http are APIs(called 'node APIs')
+// Browser's DOM and browser methods for DOM manipulation are APIs(JavaScript APIs, Google APIs)
+// With OOP, when exposing methods to public, we're creating an API. We are giving other software the option of interacting with our software, in this case the objects the methods are attached to.
+
+// The REST architecture - Representational State Transfer
+// It is a way to build a web API that makes it easy for others to consume.(make it smooth for others).
+
+// REST API are built like this:
+// 1) Seperate API into logical resources.
+// 2) Expose structured, resource-based URLs.
+// 3) We use HTTP methods(GET, POST, PUT, DELETE)
+// 4) We send data as JSON(usually)
+// 5) REST APIs must be stateless
+
+// We will go through each one seperately:
+
+// 1) Seperate API into logical resources:
+
+// The key abstraction in REST is Resources. All data we want to share in API should be divided into logical resources.
+// What is a resource?
+// An object or representaion of s.t. which has some data associated with it.
+// E.g. in our Natours project; tours, users, reviews are all resources.
+// It is any info. that can be named, but not a verb as in HTTP methods.
+
+// 2) Expose structured, resource-based URLs:
+
+// We need to expose(i.e. to make available) the data using some structured URLs that the client can send requests to. E.g. https://www.natours.com/addNewTour Here the /addNewTour is an endpoint. More examples: /getTour /updateTour /deleteTour /getToursByUser /deleteToursByUser
+// Each of these will send different data back to client or perform different actions on behalf of the client.
+// However, the above examples are WRONG because they should only contain the resources and NOT the actions you can perform on the resources because that would be a nightmare to maintain.
+// To fix these endpoints we will look at /getTour. We want to get all the tours available, so we will change this to jsut /tours and make a GET request whenever there is a client request to access this endpoint. The verbs then stay with the HTTP methods.
+
+// *It is a common convention to use the resource name in plural e.g. tours instead of tour.* This is because we usually want all the tours and not just one, but if we do filter for just one tour, then we add the tour id or some other unique identifier e.g. /tours/7. This is where Express really helps us.
+
+// 3) We use HTTP methods(verbs):
+
+// 5 Most Used HTTP methods:
+
+// The GET method gives us a Read method on data.
+// The POST method is used to Create something on the server i.e. to create new resources. This would change our above /addNewTour to just /tours. Here endpoint would be /tours (usually no identifier is needed because the server has other data to figure this out) as well. Just the HTTP method would not be the same. So POST comes in to server with request.
+// The PUT and PATCH methods are used to update. So for our previous URL /updateTour we would use /tours/7 with thes methods. The difference with PUT and PATCH is that PUT is supposed to send the entire updated object to update, while PATCH is only supposed to send the specific part of the object that has been changed. Both have the ability to send info. to the server. Similar to POST, but with a different intent.
+// The DELETE method is used to delete some resource. Needs unique identifier e.g. /tours/7 and also authentication where user needs to be logged into profile.
+
+// These methods allow the client perform the basic 4 CRUD operations for APIS and Databases:
+// CRUD - Create, Read, Update, Delete
+
+// Actions which are not under CRUD could be logging in, searching etc. These are not related to a particular resource either, but we will use an endpoint for these as well e.g. /login or /search.
+
+// For the special resources from above like /getToursByUser or /deleteToursByUser we would just use /useres/3/tours and /users/3/tours/9 respectively. For URL endpoints just have to have the unique identifier for the user and the tour. This is combining resources. It is important to build nicely structure URLs that are easy and logical to consume for the client.
+
+// 4) We send data as JSON(typically):
+
+// Usually we are using the JSON data format to send data to the client or to the server.
+// What is JSON?
+// A lightweight data interchange format that is language agnostic and used by web APIs.
+// It looks like a JS object, but there are differnces. The key difference is that the 'keys' from the key/value pairs have to be strings. The values can be string, numbers, boolean values, other objects, or even arrays of objects etc.
+
+// Response formatting:
+// When sending a response usually it is slightly formatted using JSend which adds a 'status': 'success' message or s.t. similar and a 'data' key which contains the rest of the object as a value.(It becomes an object within an object aka a nested object.) This is called 'enveloping' where you wrap the data in an additional object. It helps mitigate some security issues and other problems.
+
+// There are other 'response formatters' besides JSend,  e.g. JSOPN:API and OData JSON Protocol.
+
+// 5) REST APIs must be 'stateless':
+
+// Stateless RESTful API: All state( a piece of data that might change e.g. whether a user is logged in or e.g. what current page is when there are several pages etc.) is handled on the client side. This means that each request must contain all the info. necessary to process a certain request. The server should not have to store i.e. remember previous requests.
+// An example would be the currentPage = 5 and we want to go to the next page of the tours so, GET /tours/nextPage request is sent to the server where the server keeps track of the current page and then sends the nextPage. This is not RESTful.
+// To make this RESTful the client should send a request with the current page details  e.g. GET /tours/page/6 (has identfied page 6) and just increment that number in the request for the next page and the server will just send the next page back.
+// Statefulness and Statelessness are important concepts in CS to understand.
