@@ -7,9 +7,10 @@
 // Express makes it easier to organize our code in the MVC(Model-View-Controller) architecture.
 
 // It is conventional to have all express configuration in app.js
-const express = require('express');
+// const express = require('express');
+
 // We create a variable called app and assign express to it. This is standard. express() is function which will add a bunch of functions saved in our 'app' variable.
-const app = express();
+// const app = express();
 
 // We will start up a server with app.listen();
 // This is similar to what we did with the 'http' package from node.js.
@@ -30,20 +31,20 @@ const app = express();
 // We can also use the .json() method and send an object(we write our string data as an object) instead of the .send() method. Then in postman we will see our object converted to JSON when calling GET.
 // Using the .json() method automatically sets our content type to JSON in our header. Can check headers in postman.
 
-app.get('/', (req, res) => {
-  res.status(200).json({ message: "Yayyy, it's working!!", app: 'Natours' });
-});
+// app.get('/', (req, res) => {
+//   res.status(200).json({ message: "Yayyy, it's working!!", app: 'Natours' });
+// });
 
 // We can also set up an http POST method:
 // Running it in postman gives us our message and a default 200 status code even without us specifying it in our code.
-app.post('/', (req, res) => {
-  res.send('You can post to this endpoint...');
-});
+// app.post('/', (req, res) => {
+//   res.send('You can post to this endpoint...');
+// });
 
-const port = 3000;
-app.listen(port, () => {
-  console.log(`App running on port ${port}...`);
-});
+// const port = 3000;
+// app.listen(port, () => {
+//   console.log(`App running on port ${port}...`);
+// });
 
 // Section 51 - APIs and RESTful API Design
 
@@ -117,3 +118,50 @@ app.listen(port, () => {
 // An example would be the currentPage = 5 and we want to go to the next page of the tours so, GET /tours/nextPage request is sent to the server where the server keeps track of the current page and then sends the nextPage. This is not RESTful.
 // To make this RESTful the client should send a request with the current page details  e.g. GET /tours/page/6 (has identfied page 6) and just increment that number in the request for the next page and the server will just send the next page back.
 // Statefulness and Statelessness are important concepts in CS to understand.
+
+// Section 52 - Starting to implement our routing for our API: Handling GET Requests
+
+const fs = require('fs');
+const express = require('express');
+
+const app = express();
+
+// app.get('/', (req, res) => {
+//   res.status(200).json({ message: "Yayyy, it's working!!", app: 'Natours' });
+// });
+
+// app.post('/', (req, res) => {
+//   res.send('You can post to this endpoint...');
+// });
+
+// Good practice to put API version number in URL, just in case you make changes you can then branch another version and the old one will still work for users. You could also put it in a subdomain, but it is easier to just include it in the URL.
+
+// The 'route-handler' is the callback function with the args ('req', 'res')
+
+// For our first route endpoint URL we just want to send back all the tours when a request is made. Where does this data come from? From our folder called /dev-data/data/tours-simple.json. It contains an array of JSON data, all related to the tours.
+// Before sending the data, we need to read it. We will do this synchronously. We do this before the 'route-handler'. We save the value to a variable 'tours'.
+// We will use JSON.parse to convert our JSON to array of JS objects.
+// Then we(the server) send it back to the client.
+// We should always include a status code.
+// Another property that is good to include is results: tours.length because it is an array of objects. If it was just one object we wouldn't do this. It tells us how many objects are included in array.
+// This is a file based API, eventually it will be a Database API.
+// We must include the core module 'fs' at the top.
+
+const tours = JSON.parse(
+  fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`)
+);
+
+app.get('/api/v1/tours', (req, res) => {
+  res.status(200).json({
+    status: 'success',
+    results: tours.length,
+    data: {
+      tours: tours,
+    },
+  });
+});
+
+const port = 3000;
+app.listen(port, () => {
+  console.log(`App running on port ${port}...`);
+});
