@@ -173,6 +173,34 @@ app.get('/api/v1/tours', (req, res) => {
   });
 });
 
+// To get a specific tour from our file, we will use a URL parameter aka variable on the end of the URL. To do this the syntax is URL/:variable. The colon siginfies a variable. It is stored in the req.params property. You define your variable, for now, using postman. You could have multiple variables. /:id/:x/:y You could also make one parameter optional by adding a '?' e.g. /:id/:x/:y? The y is optional.
+// We need to get the tour from our JSON file with the id of 5 which we defined in postman. We will use JS function .find(), it loops through away and we have a callback function which will check if the el.id === id. It returns an array with that specification.
+app.get('/api/v1/tours/:id', (req, res) => {
+  console.log(req.params);
+
+  // we need to change our parameter to a number from a string, so we will use a trick of type coercion. If you multiply a string by a number it auto converts it to a number, so we will multiply by 1.
+  const id = req.params.id * 1;
+
+  // To make sure tour exists in our file we check id number which happens to be the same as the array number against the length of the array. If the number is greater than the length, then it doesn't exist and we return a response message of 404.
+  if (id > tours.length) {
+    return res.status(404).json({
+      status: 'fail',
+      message: 'Invalid ID',
+    });
+  }
+
+  // We could, alternatively look through tours first, and if not found !tour, then use the same message. The only difference is the below line has to be first, and the if statement will be if (!tour) {above res. message 404 here}. It will give same result.
+
+  const tour = tours.find((el) => el.id === id);
+
+  res.status(200).json({
+    status: 'sucess',
+    data: {
+      tours: tour,
+    },
+  });
+});
+
 app.post('/api/v1/tours', (req, res) => {
   // console.log(req.body);
 
@@ -200,7 +228,6 @@ app.post('/api/v1/tours', (req, res) => {
       });
     })
   );
-
   // res.send('Done!');
 });
 
